@@ -1,21 +1,34 @@
 {
-	"appId": "com.calculator.app",
+	"appId": "com.example.calculator",
 	"appName": "Calculator App",
 	"webDir": "dist/public",
 	"server": {
 		"androidScheme": "https"
 	},
-	"android": {},
 	"plugins": {
-		"App": {
-			"launchShowDuration": 500
+		"SplashScreen": {
+			"launchShowDuration": 3000,
+			"launchAutoHide": true,
+			"backgroundColor": "#ffffffff",
+			"androidSplashResourceName": "splash",
+			"androidScaleType": "CENTER_CROP",
+			"showSpinner": true,
+			"androidSpinnerStyle": "large",
+			"iosSpinnerStyle": "small",
+			"spinnerColor": "#999999",
+			"splashFullScreen": true,
+			"splashImmersive": true,
+			"layoutName": "launch_screen",
+			"useDialog": true
 		},
 		"StatusBar": {
-			"style": "DARK",
-			"backgroundColor": "#1a1a1a"
+			"style": "dark",
+			"backgroundColor": "#ffffff"
 		},
 		"Keyboard": {
-			"resize": "body"
+			"resize": "body",
+			"style": "dark",
+			"resizeOnFullScreen": true
 		}
 	}
 }

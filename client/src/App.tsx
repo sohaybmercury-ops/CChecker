@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Calculator from "@/pages/calculator";
 import NotFound from "@/pages/not-found";
+import { useEffect } from "react";
+import { MobileUtils } from "./lib/mobile";
 
 function Router() {
   return (
@@ -16,11 +18,18 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    // تهيئة التطبيق للجوال
+    MobileUtils.initializeApp();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
+        <div className="min-h-screen bg-background text-foreground">
+          <Toaster />
+          <Router />
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

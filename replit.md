@@ -1,8 +1,8 @@
 # Overview
 
-This is a full-stack web application built with a React frontend and Express.js backend. The application currently implements a calculator interface as the main feature. The project uses TypeScript throughout and follows a monorepo structure with shared code between client and server.
+This is a full-stack web application built with a React frontend and Express.js backend, now enhanced with Capacitor for mobile app development. The application implements a calculator interface as the main feature and can be deployed as both a web app and native mobile applications for iOS and Android.
 
-The application is designed as a modern web app with a clean UI built using shadcn/ui components, proper state management with React Query, and a scalable backend architecture ready for database integration.
+The project uses TypeScript throughout and follows a monorepo structure with shared code between client and server. The application is designed as a modern progressive web app with mobile-first design principles, haptic feedback for mobile devices, and automated CI/CD through GitHub Actions.
 
 # User Preferences
 
@@ -57,6 +57,16 @@ The application uses Drizzle ORM for database management with PostgreSQL as the 
 - **Backend Build**: esbuild creates Node.js compatible bundle in `/dist`
 - **Production**: Express serves both API routes and static frontend files
 - **Environment**: NODE_ENV-based configuration for development vs production
+- **Mobile Deployment**: Capacitor builds native iOS and Android apps
+- **CI/CD**: GitHub Actions automatically builds web and mobile apps on push/PR
+
+## Mobile Development with Capacitor
+- **Capacitor Core**: Cross-platform native runtime for web apps
+- **iOS Support**: Native iOS app builds using Xcode
+- **Android Support**: Native Android app builds using Gradle
+- **Native Plugins**: Haptic feedback, status bar, splash screen, keyboard management
+- **Mobile Optimizations**: Touch-friendly UI, responsive design, safe area support
+- **Automated Builds**: GitHub Actions workflow for CI/CD mobile app generation
 
 # External Dependencies
 
@@ -88,6 +98,18 @@ The application uses Drizzle ORM for database management with PostgreSQL as the 
 - **esbuild**: Fast JavaScript bundler for production builds
 - **@replit/vite-plugin-runtime-error-modal**: Development error overlay
 - **@replit/vite-plugin-cartographer**: Replit-specific development tooling
+
+## Mobile Development Dependencies
+- **@capacitor/core**: Core Capacitor runtime for cross-platform mobile apps
+- **@capacitor/cli**: Command-line interface for Capacitor operations
+- **@capacitor/ios**: iOS platform integration and native features
+- **@capacitor/android**: Android platform integration and native features
+- **@capacitor/app**: App lifecycle and state management
+- **@capacitor/haptics**: Native haptic feedback for enhanced UX
+- **@capacitor/keyboard**: Keyboard behavior and management
+- **@capacitor/splash-screen**: Splash screen control and customization
+- **@capacitor/status-bar**: Status bar styling and behavior
+- **@capacitor/preferences**: Native storage for app preferences
 
 ## Validation & Utilities
 - **zod**: Runtime type validation and schema definition

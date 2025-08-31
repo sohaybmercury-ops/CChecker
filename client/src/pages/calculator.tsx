@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
+import { MobileUtils, useViewport } from "@/lib/mobile";
+import { ImpactStyle } from "@capacitor/haptics";
 
 interface CalculatorState {
   currentDisplay: string;
@@ -17,6 +19,8 @@ export default function Calculator() {
     waitingForOperand: false,
     lastResult: null,
   });
+
+  const viewport = useViewport();
 
   const calculate = useCallback((firstOperand: number, secondOperand: number, operator: string): number => {
     switch (operator) {
@@ -52,7 +56,10 @@ export default function Calculator() {
     return str;
   }, []);
 
-  const handleNumber = useCallback((digit: string) => {
+  const handleNumber = useCallback(async (digit: string) => {
+    // إضافة ردة فعل اهتزازية للجوال
+    await MobileUtils.triggerHaptic(ImpactStyle.Light);
+    
     setState(prev => {
       if (prev.waitingForOperand) {
         return {
@@ -80,7 +87,9 @@ export default function Calculator() {
     });
   }, []);
 
-  const handleOperator = useCallback((nextOperator: string) => {
+  const handleOperator = useCallback(async (nextOperator: string) => {
+    // اهتزاز متوسط للعمليات
+    await MobileUtils.triggerHaptic(ImpactStyle.Medium);
     setState(prev => {
       const inputValue = parseFloat(prev.currentDisplay);
       
