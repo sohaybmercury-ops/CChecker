@@ -8,8 +8,7 @@
   "theme_color": "#ff8c00",
   "orientation": "portrait",
   "scope": "/",
-  "lang": "ar",
-  "dir": "rtl",
+  "lang": "en",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
