@@ -81,6 +81,14 @@ The application uses Drizzle ORM for database management with PostgreSQL as the 
 - **cmdk**: Command palette component
 - **embla-carousel-react**: Carousel component for image/content sliding
 
+## Mobile Development
+- **@capacitor/core**: Native runtime for building cross-platform mobile apps
+- **@capacitor/android**: Android platform support for Capacitor
+- **@capacitor/app**: Native app plugin for app information and events
+- **@capacitor/haptics**: Device haptic feedback integration
+- **@capacitor/keyboard**: Keyboard management for mobile devices
+- **@capacitor/status-bar**: Status bar styling and management
+
 ## Development Tools
 - **vite**: Fast build tool and development server
 - **@vitejs/plugin-react**: React integration for Vite
@@ -93,3 +101,28 @@ The application uses Drizzle ORM for database management with PostgreSQL as the 
 - **zod**: Runtime type validation and schema definition
 - **drizzle-zod**: Integration between Drizzle ORM and Zod validation
 - **nanoid**: URL-safe unique ID generator
+
+# Mobile App Configuration
+
+## Capacitor Setup
+The application is configured as a hybrid mobile app using Capacitor, allowing it to be packaged as native Android and iOS applications.
+
+## App Configuration
+- **App ID**: com.calculator.app
+- **App Name**: Calculator
+- **Package Format**: APK and AAB (Android App Bundle)
+- **Build Scripts**: Automated build scripts for mobile packaging
+
+## Build Process
+The mobile build process includes:
+1. Web application compilation with Vite
+2. Asset copying to native platforms
+3. Capacitor synchronization
+4. Native Android builds (APK/AAB)
+
+## Features Available on Mobile
+- Full calculator functionality with native feel
+- Key management system with encrypted storage
+- Dark theme optimized for mobile devices
+- Native status bar and keyboard handling
+- Haptic feedback support for button interactions
