@@ -447,13 +447,6 @@ export default function Calculator() {
           </div>
         </Card>
 
-        {/* Keyboard Support Instructions */}
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p data-testid="text-keyboard-info">Keyboard shortcuts supported</p>
-          <p className="text-xs mt-1" data-testid="text-keyboard-shortcuts">
-            Numbers: 0-9 | Operators: +, -, *, / | Enter: = | Escape: Clear
-          </p>
-        </div>
       </div>
     </div>
   );
