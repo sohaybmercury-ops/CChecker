@@ -36,8 +36,8 @@ const config: CapacitorConfig = {
       useDialog: true,
     },
     StatusBar: {
-      style: "dark",
-      backgroundColor: "#ffffff"
+      style: "light",
+      backgroundColor: "#ff8c00"
     },
     Keyboard: {
       resize: "body",
