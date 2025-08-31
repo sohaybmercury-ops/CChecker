@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
+import { Link } from "wouter";
+import { Settings } from "lucide-react";
 
 interface CalculatorState {
   currentDisplay: string;
@@ -423,12 +425,25 @@ export default function Calculator() {
           </div>
         </Card>
 
-        {/* Keyboard Support Instructions */}
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p data-testid="text-keyboard-info">Keyboard shortcuts supported</p>
-          <p className="text-xs mt-1" data-testid="text-keyboard-shortcuts">
-            Numbers: 0-9 | Operators: +, -, *, / | Enter: = | Escape: Clear
-          </p>
+        {/* Navigation and Keyboard Support */}
+        <div className="mt-4 space-y-2">
+          <div className="text-center">
+            <Link 
+              href="/keys" 
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors"
+              data-testid="link-key-management"
+            >
+              <Settings className="h-4 w-4" />
+              Key Management
+            </Link>
+          </div>
+          
+          <div className="text-center text-sm text-muted-foreground">
+            <p data-testid="text-keyboard-info">Keyboard shortcuts supported</p>
+            <p className="text-xs mt-1" data-testid="text-keyboard-shortcuts">
+              Numbers: 0-9 | Operators: +, -, *, / | Enter: = | Escape: Clear
+            </p>
+          </div>
         </div>
       </div>
     </div>

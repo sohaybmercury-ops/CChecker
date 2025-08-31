@@ -1,70 +1,97 @@
-import { type User, type InsertUser, type ApiKey, type InsertApiKey, type KeyStore, type InsertKeyStore, type AppSettings, type InsertAppSettings } from "@shared/schema";
-import { randomUUID } from "crypto";
+import crypto from 'crypto';
+import type { ApiKey, KeyStore, InsertApiKey, InsertKeyStore, AppSettings, InsertAppSettings } from '@shared/schema';
 
-// modify the interface with any CRUD methods
-// you might need
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
+const ALGORITHM = 'aes-256-gcm';
 
-export interface IStorage {
-  // User methods
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  
-  // App Settings methods
-  getAppSettings(): Promise<AppSettings | undefined>;
+export interface IKeyStoreService {
+  // App Settings
+  getAppSettings(): Promise<AppSettings | null>;
   setAppSettings(settings: InsertAppSettings): Promise<AppSettings>;
-  updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | undefined>;
+  updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | null>;
   
-  // API Keys methods
+  // API Keys
   createApiKey(key: InsertApiKey): Promise<ApiKey>;
-  getApiKey(keyName: string): Promise<string | undefined>;
+  getApiKey(keyName: string): Promise<string | null>;
   getAllApiKeys(): Promise<Omit<ApiKey, 'encryptedValue'>[]>;
-  updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | undefined>;
+  updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | null>;
   deleteApiKey(id: string): Promise<boolean>;
   
-  // Key Store methods
+  // Key Store
   setSecret(namespace: string, key: string, value: any, valueType: string, metadata?: any): Promise<KeyStore>;
   getSecret(namespace: string, key: string): Promise<any>;
   deleteSecret(namespace: string, key: string): Promise<boolean>;
   listSecrets(namespace: string): Promise<Omit<KeyStore, 'encryptedValue'>[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+export class MemKeyStoreService implements IKeyStoreService {
   private appSettings: AppSettings | null = null;
   private apiKeys = new Map<string, ApiKey>();
   private keyStore = new Map<string, KeyStore>();
 
   constructor() {
-    this.users = new Map();
+    this.initializeApp();
   }
 
-  // User methods
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  private async initializeApp() {
+    // Initialize with app ID from environment
+    const replId = process.env.REPL_ID || crypto.randomUUID();
+    const appName = process.env.APP_NAME || 'Calculator App';
+    
+    if (!this.appSettings) {
+      this.appSettings = {
+        id: crypto.randomUUID(),
+        appId: replId,
+        appName,
+        description: 'A modern calculator application with key management',
+        isActive: true,
+        metadata: {
+          environment: process.env.NODE_ENV || 'development',
+          domain: process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'
+        },
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    }
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const users: User[] = [];
-    this.users.forEach(user => users.push(user));
-    return users.find((user) => user.username === username);
+  // Encryption utilities
+  private encrypt(text: string): string {
+    const key = Buffer.from(ENCRYPTION_KEY.slice(0, 64), 'hex');
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipher(ALGORITHM, key);
+    
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    return iv.toString('hex') + ':' + encrypted;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  private decrypt(encryptedText: string): string {
+    try {
+      const key = Buffer.from(ENCRYPTION_KEY.slice(0, 64), 'hex');
+      const parts = encryptedText.split(':');
+      const iv = Buffer.from(parts[0], 'hex');
+      const encrypted = parts[1];
+      
+      const decipher = crypto.createDecipher(ALGORITHM, key);
+      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      
+      return decrypted;
+    } catch (error) {
+      throw new Error('Failed to decrypt value');
+    }
   }
 
   // App Settings methods
-  async getAppSettings(): Promise<AppSettings | undefined> {
-    return this.appSettings || undefined;
+  async getAppSettings(): Promise<AppSettings | null> {
+    return this.appSettings;
   }
 
   async setAppSettings(settings: InsertAppSettings): Promise<AppSettings> {
     this.appSettings = {
-      id: randomUUID(),
+      id: crypto.randomUUID(),
       ...settings,
       description: settings.description ?? null,
       isActive: settings.isActive ?? true,
@@ -75,7 +102,7 @@ export class MemStorage implements IStorage {
     return this.appSettings;
   }
 
-  async updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | undefined> {
+  async updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | null> {
     if (this.appSettings && this.appSettings.id === id) {
       this.appSettings = {
         ...this.appSettings,
@@ -87,30 +114,38 @@ export class MemStorage implements IStorage {
       };
       return this.appSettings;
     }
-    return undefined;
+    return null;
   }
 
   // API Keys methods
   async createApiKey(key: InsertApiKey): Promise<ApiKey> {
-    const id = randomUUID();
+    const id = crypto.randomUUID();
+    const encryptedValue = this.encrypt(key.encryptedValue);
+    
     const apiKey: ApiKey = {
       id,
       ...key,
       description: key.description ?? null,
       isActive: key.isActive ?? true,
       expiresAt: key.expiresAt ?? null,
+      encryptedValue,
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    
     this.apiKeys.set(id, apiKey);
     return apiKey;
   }
 
-  async getApiKey(keyName: string): Promise<string | undefined> {
+  async getApiKey(keyName: string): Promise<string | null> {
     const keys: ApiKey[] = [];
-    this.apiKeys.forEach(key => keys.push(key));
-    const apiKey = keys.find(key => key.keyName === keyName && key.isActive);
-    return apiKey?.encryptedValue;
+    this.apiKeys.forEach(apiKey => keys.push(apiKey));
+    
+    const foundKey = keys.find(apiKey => apiKey.keyName === keyName && apiKey.isActive);
+    if (foundKey) {
+      return this.decrypt(foundKey.encryptedValue);
+    }
+    return null;
   }
 
   async getAllApiKeys(): Promise<Omit<ApiKey, 'encryptedValue'>[]> {
@@ -121,16 +156,14 @@ export class MemStorage implements IStorage {
     return keys;
   }
 
-  async updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | undefined> {
+  async updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | null> {
     const apiKey = this.apiKeys.get(id);
-    if (!apiKey) return undefined;
+    if (!apiKey) return null;
 
     const updatedKey: ApiKey = {
       ...apiKey,
       ...updates,
-      description: updates.description !== undefined ? updates.description : apiKey.description,
-      isActive: updates.isActive !== undefined ? updates.isActive : apiKey.isActive,
-      expiresAt: updates.expiresAt !== undefined ? updates.expiresAt : apiKey.expiresAt,
+      encryptedValue: updates.encryptedValue ? this.encrypt(updates.encryptedValue) : apiKey.encryptedValue,
       updatedAt: new Date()
     };
 
@@ -144,15 +177,16 @@ export class MemStorage implements IStorage {
 
   // Key Store methods
   async setSecret(namespace: string, key: string, value: any, valueType: string, metadata?: any): Promise<KeyStore> {
-    const id = randomUUID();
+    const id = crypto.randomUUID();
     const storeKey = `${namespace}:${key}`;
     const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+    const encryptedValue = this.encrypt(stringValue);
 
     const keyStoreEntry: KeyStore = {
       id,
       namespace,
       key,
-      encryptedValue: stringValue,
+      encryptedValue,
       valueType,
       metadata: metadata || null,
       createdAt: new Date(),
@@ -169,16 +203,16 @@ export class MemStorage implements IStorage {
     
     if (!entry) return null;
 
-    const value = entry.encryptedValue;
+    const decryptedValue = this.decrypt(entry.encryptedValue);
     
     switch (entry.valueType) {
       case 'json':
-        return JSON.parse(value);
+        return JSON.parse(decryptedValue);
       case 'number':
-        return parseFloat(value);
+        return parseFloat(decryptedValue);
       case 'string':
       default:
-        return value;
+        return decryptedValue;
     }
   }
 
@@ -199,4 +233,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Global instance
+export const keyStoreService = new MemKeyStoreService();
