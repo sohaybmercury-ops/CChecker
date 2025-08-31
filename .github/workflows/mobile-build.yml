@@ -73,16 +73,28 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x android/gradlew
       
-    - name: Build Android APK
+    - name: Build Android APK (Debug)
       run: |
         cd android
         ./gradlew assembleDebug
         
-    - name: Upload Android APK
+    - name: Build Android APK (Release - Signed)
+      run: |
+        cd android
+        ./gradlew assembleRelease
+        
+    - name: Upload Android APK (Debug)
       uses: actions/upload-artifact@v4
       with:
-        name: android-apk
+        name: android-apk-debug
         path: android/app/build/outputs/apk/debug/
+        retention-days: 30
+        
+    - name: Upload Android APK (Release - Signed)
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-apk-release-signed
+        path: android/app/build/outputs/apk/release/
         retention-days: 30
 
   build-ios:

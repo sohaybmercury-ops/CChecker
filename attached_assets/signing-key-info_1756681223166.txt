@@ -1,0 +1,10 @@
+Keep this file and signing.keystore in a safe place. You'll need these files if you want to upload future versions of your PWA to the Google Play Store.
+
+Key store file: signing.keystore
+Key store password: rOhg6wD9Z2Vv
+Key alias: my-key-alias
+Key password: rOhg6wD9Z2Vv
+Signer's full name: app devlop nour
+Signer's organization: app devlop nour
+Signer's organizational unit: app devlop nour
+Signer's country code: US
