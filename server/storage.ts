@@ -1,53 +1,30 @@
-import { type User, type InsertUser, type ApiKey, type InsertApiKey, type KeyStore, type InsertKeyStore, type AppSettings, type InsertAppSettings } from "@shared/schema";
+import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
-  // User methods
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
-  // App Settings methods
-  getAppSettings(): Promise<AppSettings | undefined>;
-  setAppSettings(settings: InsertAppSettings): Promise<AppSettings>;
-  updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | undefined>;
-  
-  // API Keys methods
-  createApiKey(key: InsertApiKey): Promise<ApiKey>;
-  getApiKey(keyName: string): Promise<string | undefined>;
-  getAllApiKeys(): Promise<Omit<ApiKey, 'encryptedValue'>[]>;
-  updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | undefined>;
-  deleteApiKey(id: string): Promise<boolean>;
-  
-  // Key Store methods
-  setSecret(namespace: string, key: string, value: any, valueType: string, metadata?: any): Promise<KeyStore>;
-  getSecret(namespace: string, key: string): Promise<any>;
-  deleteSecret(namespace: string, key: string): Promise<boolean>;
-  listSecrets(namespace: string): Promise<Omit<KeyStore, 'encryptedValue'>[]>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
-  private appSettings: AppSettings | null = null;
-  private apiKeys = new Map<string, ApiKey>();
-  private keyStore = new Map<string, KeyStore>();
 
   constructor() {
     this.users = new Map();
   }
 
-  // User methods
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const users: User[] = [];
-    this.users.forEach(user => users.push(user));
-    return users.find((user) => user.username === username);
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username,
+    );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -55,147 +32,6 @@ export class MemStorage implements IStorage {
     const user: User = { ...insertUser, id };
     this.users.set(id, user);
     return user;
-  }
-
-  // App Settings methods
-  async getAppSettings(): Promise<AppSettings | undefined> {
-    return this.appSettings || undefined;
-  }
-
-  async setAppSettings(settings: InsertAppSettings): Promise<AppSettings> {
-    this.appSettings = {
-      id: randomUUID(),
-      ...settings,
-      description: settings.description ?? null,
-      isActive: settings.isActive ?? true,
-      metadata: settings.metadata ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    return this.appSettings;
-  }
-
-  async updateAppSettings(id: string, updates: Partial<InsertAppSettings>): Promise<AppSettings | undefined> {
-    if (this.appSettings && this.appSettings.id === id) {
-      this.appSettings = {
-        ...this.appSettings,
-        ...updates,
-        description: updates.description !== undefined ? updates.description : this.appSettings.description,
-        isActive: updates.isActive !== undefined ? updates.isActive : this.appSettings.isActive,
-        metadata: updates.metadata !== undefined ? updates.metadata : this.appSettings.metadata,
-        updatedAt: new Date()
-      };
-      return this.appSettings;
-    }
-    return undefined;
-  }
-
-  // API Keys methods
-  async createApiKey(key: InsertApiKey): Promise<ApiKey> {
-    const id = randomUUID();
-    const apiKey: ApiKey = {
-      id,
-      ...key,
-      description: key.description ?? null,
-      isActive: key.isActive ?? true,
-      expiresAt: key.expiresAt ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.apiKeys.set(id, apiKey);
-    return apiKey;
-  }
-
-  async getApiKey(keyName: string): Promise<string | undefined> {
-    const keys: ApiKey[] = [];
-    this.apiKeys.forEach(key => keys.push(key));
-    const apiKey = keys.find(key => key.keyName === keyName && key.isActive);
-    return apiKey?.encryptedValue;
-  }
-
-  async getAllApiKeys(): Promise<Omit<ApiKey, 'encryptedValue'>[]> {
-    const keys: Omit<ApiKey, 'encryptedValue'>[] = [];
-    this.apiKeys.forEach(({ encryptedValue, ...key }) => {
-      keys.push(key);
-    });
-    return keys;
-  }
-
-  async updateApiKey(id: string, updates: Partial<InsertApiKey>): Promise<ApiKey | undefined> {
-    const apiKey = this.apiKeys.get(id);
-    if (!apiKey) return undefined;
-
-    const updatedKey: ApiKey = {
-      ...apiKey,
-      ...updates,
-      description: updates.description !== undefined ? updates.description : apiKey.description,
-      isActive: updates.isActive !== undefined ? updates.isActive : apiKey.isActive,
-      expiresAt: updates.expiresAt !== undefined ? updates.expiresAt : apiKey.expiresAt,
-      updatedAt: new Date()
-    };
-
-    this.apiKeys.set(id, updatedKey);
-    return updatedKey;
-  }
-
-  async deleteApiKey(id: string): Promise<boolean> {
-    return this.apiKeys.delete(id);
-  }
-
-  // Key Store methods
-  async setSecret(namespace: string, key: string, value: any, valueType: string, metadata?: any): Promise<KeyStore> {
-    const id = randomUUID();
-    const storeKey = `${namespace}:${key}`;
-    const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-
-    const keyStoreEntry: KeyStore = {
-      id,
-      namespace,
-      key,
-      encryptedValue: stringValue,
-      valueType,
-      metadata: metadata || null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    this.keyStore.set(storeKey, keyStoreEntry);
-    return keyStoreEntry;
-  }
-
-  async getSecret(namespace: string, key: string): Promise<any> {
-    const storeKey = `${namespace}:${key}`;
-    const entry = this.keyStore.get(storeKey);
-    
-    if (!entry) return null;
-
-    const value = entry.encryptedValue;
-    
-    switch (entry.valueType) {
-      case 'json':
-        return JSON.parse(value);
-      case 'number':
-        return parseFloat(value);
-      case 'string':
-      default:
-        return value;
-    }
-  }
-
-  async deleteSecret(namespace: string, key: string): Promise<boolean> {
-    const storeKey = `${namespace}:${key}`;
-    return this.keyStore.delete(storeKey);
-  }
-
-  async listSecrets(namespace: string): Promise<Omit<KeyStore, 'encryptedValue'>[]> {
-    const secrets: Omit<KeyStore, 'encryptedValue'>[] = [];
-    this.keyStore.forEach((entry) => {
-      if (entry.namespace === namespace) {
-        const { encryptedValue, ...secretEntry } = entry;
-        secrets.push(secretEntry);
-      }
-    });
-    return secrets;
   }
 }
 
