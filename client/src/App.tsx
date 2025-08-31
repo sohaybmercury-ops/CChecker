@@ -7,6 +7,8 @@ import Calculator from "@/pages/calculator";
 import NotFound from "@/pages/not-found";
 import { useEffect } from "react";
 import { MobileUtils } from "./lib/mobile";
+import { OfflineManager } from "./lib/offline";
+import { OfflineIndicator, PWAInstallPrompt } from "@/components/OfflineIndicator";
 
 function Router() {
   return (
@@ -21,12 +23,17 @@ function App() {
   useEffect(() => {
     // تهيئة التطبيق للجوال
     MobileUtils.initializeApp();
+    
+    // تسجيل Service Worker للعمل بدون إنترنت
+    OfflineManager.getInstance().register();
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground safe-area">
+          <OfflineIndicator />
+          <PWAInstallPrompt />
           <Toaster />
           <Router />
         </div>

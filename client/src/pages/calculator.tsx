@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { MobileUtils, useViewport } from "@/lib/mobile";
 import { ImpactStyle } from "@capacitor/haptics";
+import { OfflineStorage, useOnlineStatus } from "@/lib/offline";
 
 interface CalculatorState {
   currentDisplay: string;
@@ -21,6 +22,20 @@ export default function Calculator() {
   });
 
   const viewport = useViewport();
+  const { isOnline } = useOnlineStatus();
+
+  // حفظ العملية الحسابية محلياً
+  const saveCalculation = useCallback(async (expression: string, result: string) => {
+    try {
+      await OfflineStorage.saveCalculation({
+        expression,
+        result,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      console.error('خطأ في حفظ العملية:', error);
+    }
+  }, []);
 
   const calculate = useCallback((firstOperand: number, secondOperand: number, operator: string): number => {
     switch (operator) {

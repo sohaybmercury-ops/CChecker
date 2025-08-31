@@ -5,7 +5,19 @@ const config: CapacitorConfig = {
   appName: 'Calculator App',
   webDir: 'dist/public',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    allowNavigation: [
+      'https://*'
+    ]
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true
+  },
+  ios: {
+    contentInset: 'automatic',
+    scrollEnabled: true
   },
   plugins: {
     SplashScreen: {
