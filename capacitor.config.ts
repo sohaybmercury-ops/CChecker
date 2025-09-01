@@ -34,7 +34,8 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: "light",
-      backgroundColor: "#000000"
+      backgroundColor: "#000000",
+      androidOpacity: 1.0
     },
     Keyboard: {
       resize: "body",
