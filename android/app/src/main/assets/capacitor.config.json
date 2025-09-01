@@ -32,7 +32,8 @@
 		},
 		"StatusBar": {
 			"style": "light",
-			"backgroundColor": "#ff8c00"
+			"backgroundColor": "#000000",
+			"androidOpacity": 1
 		},
 		"Keyboard": {
 			"resize": "body",
