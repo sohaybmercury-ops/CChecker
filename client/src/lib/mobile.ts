@@ -18,8 +18,8 @@ export class MobileUtils {
 
     try {
       // تهيئة شريط الحالة
-      await StatusBar.setStyle({ style: Style.Dark });
-      await StatusBar.setBackgroundColor({ color: '#ffffff' });
+      await StatusBar.setStyle({ style: Style.Light });
+      await StatusBar.setBackgroundColor({ color: '#1a1a1a' });
 
       // إخفاء شاشة البداية
       await SplashScreen.hide();
@@ -66,7 +66,7 @@ export class MobileUtils {
         style: isDark ? Style.Light : Style.Dark 
       });
       await StatusBar.setBackgroundColor({ 
-        color: isDark ? '#000000' : '#ffffff' 
+        color: isDark ? '#1a1a1a' : '#ffffff' 
       });
     } catch (error) {
       console.error('Error setting status bar style:', error);
