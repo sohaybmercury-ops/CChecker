@@ -84,7 +84,7 @@ export default function History() {
             
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
-              <h1 className="text-lg font-medium">Calculator History</h1>
+              <h1 className="text-lg font-medium">تاريخ حاسبة نور</h1>
             </div>
             
             <div className="w-10"></div>
@@ -115,7 +115,7 @@ export default function History() {
                 className="w-full"
                 data-testid="button-return-calculator"
               >
-                Return to Calculator
+العودة إلى الحاسبة
               </Button>
             </Link>
           </div>
