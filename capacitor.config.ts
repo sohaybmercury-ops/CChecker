@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.appsnour.calculator.app',
-  appName: 'Calculator App',
+  appName: 'Nour Calculator',
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
