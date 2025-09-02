@@ -1,4 +1,4 @@
-package com.example.calculator;
+package com.appsnour.calculator.app;
 
 import com.getcapacitor.BridgeActivity;
 
