@@ -142,3 +142,65 @@ export class MobileStorage {
     }
   }
 }
+
+// Calculator History Local Storage
+export interface LocalCalculatorHistory {
+  id: string;
+  expression: string;
+  result: string;
+  timestamp: string;
+}
+
+export class CalculatorHistoryStorage {
+  private static readonly HISTORY_KEY = 'calculator_history';
+
+  static async getHistory(): Promise<LocalCalculatorHistory[]> {
+    try {
+      const historyJson = await MobileStorage.get(this.HISTORY_KEY);
+      if (!historyJson) return [];
+      
+      const history = JSON.parse(historyJson) as LocalCalculatorHistory[];
+      // Sort by timestamp, newest first
+      return history.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    } catch (error) {
+      console.error('Error getting calculator history:', error);
+      return [];
+    }
+  }
+
+  static async addCalculation(expression: string, result: string): Promise<LocalCalculatorHistory> {
+    try {
+      const history = await this.getHistory();
+      const newCalculation: LocalCalculatorHistory = {
+        id: this.generateId(),
+        expression,
+        result,
+        timestamp: new Date().toISOString()
+      };
+      
+      history.unshift(newCalculation); // Add to beginning
+      
+      // Keep only last 100 calculations
+      const limitedHistory = history.slice(0, 100);
+      
+      await MobileStorage.set(this.HISTORY_KEY, JSON.stringify(limitedHistory));
+      return newCalculation;
+    } catch (error) {
+      console.error('Error adding calculation:', error);
+      throw error;
+    }
+  }
+
+  static async clearHistory(): Promise<void> {
+    try {
+      await MobileStorage.remove(this.HISTORY_KEY);
+    } catch (error) {
+      console.error('Error clearing calculator history:', error);
+      throw error;
+    }
+  }
+
+  private static generateId(): string {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+}

@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MobileUtils, useViewport } from "@/lib/mobile";
+import { MobileUtils, useViewport, CalculatorHistoryStorage } from "@/lib/mobile";
 import { ImpactStyle } from "@capacitor/haptics";
 import { useOnlineStatus } from "@/lib/offline";
-import { useMutation } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { Link } from "wouter";
-import type { InsertCalculatorHistory } from "@shared/schema";
 
 interface CalculatorState {
   currentDisplay: string;
@@ -29,30 +27,15 @@ export default function Calculator() {
   const viewport = useViewport();
   const { isOnline } = useOnlineStatus();
 
-  // Save calculation to history
-  const saveCalculationMutation = useMutation({
-    mutationFn: async (data: InsertCalculatorHistory) => {
-      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to save calculation');
-      }
-      return response.json();
-    },
-  });
-
-  const saveCalculation = useCallback((expression: string, result: string) => {
-    saveCalculationMutation.mutate({
-      expression,
-      result,
-    });
-  }, [saveCalculationMutation]);
+  // Save calculation to local storage
+  const saveCalculation = useCallback(async (expression: string, result: string) => {
+    try {
+      await CalculatorHistoryStorage.addCalculation(expression, result);
+    } catch (error) {
+      console.error('Failed to save calculation:', error);
+      // Silently fail - calculation still works even if history saving fails
+    }
+  }, []);
 
   const calculate = useCallback((firstOperand: number, secondOperand: number, operator: string): number => {
     switch (operator) {

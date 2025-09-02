@@ -1,51 +1,48 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, ArrowLeft, Clock } from "lucide-react";
 import { Link } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
-import { MobileUtils } from "@/lib/mobile";
-import type { CalculatorHistory } from "@shared/schema";
+import { CalculatorHistoryStorage, type LocalCalculatorHistory } from "@/lib/mobile";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 
 export default function History() {
-  // Query to get calculator history
-  const { data: history = [], isLoading, error } = useQuery({
-    queryKey: ['/api/calculator/history'],
-    queryFn: async () => {
-      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
-      const response = await fetch(apiUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data as CalculatorHistory[];
+  const [history, setHistory] = useState<LocalCalculatorHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
+
+  // Load history on component mount
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const historyData = await CalculatorHistoryStorage.getHistory();
+      setHistory(historyData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load history');
+    } finally {
+      setIsLoading(false);
     }
-  });
+  };
 
-  const queryClient = useQueryClient();
-
-  // Mutation to clear history
-  const clearHistoryMutation = useMutation({
-    mutationFn: async () => {
-      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
-      const response = await fetch(apiUrl, { method: 'DELETE' });
-      if (!response.ok) {
-        throw new Error('Failed to clear history');
-      }
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/calculator/history'] });
-    },
-  });
-
-  const handleClearHistory = () => {
+  const handleClearHistory = async () => {
     if (window.confirm('Are you sure you want to delete all history?')) {
-      clearHistoryMutation.mutate();
+      try {
+        setIsClearing(true);
+        await CalculatorHistoryStorage.clearHistory();
+        setHistory([]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to clear history');
+      } finally {
+        setIsClearing(false);
+      }
     }
   };
 
@@ -98,11 +95,11 @@ export default function History() {
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-semibold mb-2">Error loading history</p>
               <p className="text-sm text-muted-foreground mb-4">
-                {error?.message || 'Unable to load calculator history'}
+                {error || 'Unable to load calculator history'}
               </p>
               <Button 
                 variant="outline" 
-                onClick={() => window.location.reload()}
+                onClick={loadHistory}
                 className="mt-2"
                 data-testid="button-retry"
               >
@@ -152,7 +149,7 @@ export default function History() {
             variant="ghost"
             size="sm"
             onClick={handleClearHistory}
-            disabled={history.length === 0 || clearHistoryMutation.isPending}
+            disabled={history.length === 0 || isClearing}
             className="p-2 hover:bg-destructive/10 hover:text-destructive"
             data-testid="button-clear-history"
           >
