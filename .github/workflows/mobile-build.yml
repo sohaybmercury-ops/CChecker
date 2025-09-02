@@ -83,6 +83,11 @@ jobs:
         cd android
         ./gradlew assembleRelease
         
+    - name: Build Android AAB (Release - Signed)
+      run: |
+        cd android
+        ./gradlew bundleRelease
+        
     - name: Upload Android APK (Debug)
       uses: actions/upload-artifact@v4
       with:
@@ -95,6 +100,13 @@ jobs:
       with:
         name: android-apk-release-signed
         path: android/app/build/outputs/apk/release/
+        retention-days: 30
+        
+    - name: Upload Android AAB (Release - Signed)
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-aab-release-signed
+        path: android/app/build/outputs/bundle/release/
         retention-days: 30
 
   build-ios:
