@@ -2,7 +2,7 @@ const CACHE_NAME = 'calculator-app-v1';
 const STATIC_CACHE = 'static-cache-v1';
 const DYNAMIC_CACHE = 'dynamic-cache-v1';
 
-// الملفات التي نريد تخزينها مؤقتاً
+// Files we want to cache
 const STATIC_FILES = [
   '/',
   '/index.html',
@@ -11,7 +11,7 @@ const STATIC_FILES = [
   '/icon-512.png'
 ];
 
-// تثبيت Service Worker
+// Install Service Worker
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   
@@ -26,11 +26,11 @@ self.addEventListener('install', (event) => {
       })
   );
   
-  // فرض التفعيل الفوري للـ Service Worker
+  // Force immediate activation of the Service Worker
   self.skipWaiting();
 });
 
-// تفعيل Service Worker
+// Activate Service Worker
 self.addEventListener('activate', (event) => {
   console.log('Service Worker: Activating...');
   
@@ -48,21 +48,21 @@ self.addEventListener('activate', (event) => {
     })
   );
   
-  // السيطرة على جميع العملاء فوراً
+  // Take control of all clients immediately
   self.clients.claim();
 });
 
-// التعامل مع طلبات الشبكة
+// Handle network requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // تجاهل طلبات non-GET
+  // Ignore non-GET requests
   if (request.method !== 'GET') {
     return;
   }
   
-  // تجاهل طلبات Chrome extensions
+  // Ignore Chrome extension requests
   if (url.protocol === 'chrome-extension:') {
     return;
   }
@@ -70,24 +70,24 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request)
       .then((cachedResponse) => {
-        // إذا وُجد في التخزين المؤقت، قم بإرجاعه
+        // If found in cache, return it
         if (cachedResponse) {
           console.log('Service Worker: Serving from cache', request.url);
           return cachedResponse;
         }
         
-        // محاولة جلب من الشبكة وتخزين النتيجة
+        // Try to fetch from network and cache result
         return fetch(request)
           .then((response) => {
-            // تحقق من صحة الاستجابة
+            // Check response validity
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
             
-            // نسخ الاستجابة لأنها stream ولا يمكن استخدامها مرتين
+            // Clone response as it's a stream and can't be used twice
             const responseToCache = response.clone();
             
-            // تخزين الاستجابة في التخزين المؤقت الديناميكي
+            // Cache response in dynamic cache
             caches.open(DYNAMIC_CACHE)
               .then((cache) => {
                 console.log('Service Worker: Caching new resource', request.url);
@@ -99,13 +99,13 @@ self.addEventListener('fetch', (event) => {
           .catch((error) => {
             console.log('Service Worker: Fetch failed', error);
             
-            // إذا كان طلب HTML، قم بإرجاع صفحة offline
+            // If HTML request, return offline page
             if (request.headers.get('accept').includes('text/html')) {
               return caches.match('/index.html');
             }
             
-            // للطلبات الأخرى، يمكن إرجاع استجابة افتراضية
-            return new Response('Offline - البيانات غير متاحة حالياً', {
+            // For other requests, return default response
+            return new Response('Offline - Data not available', {
               status: 503,
               statusText: 'Service Unavailable',
               headers: new Headers({
@@ -117,7 +117,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// التعامل مع رسائل من التطبيق الرئيسي
+// Handle messages from main application
 self.addEventListener('message', (event) => {
   if (event.data.action === 'SKIP_WAITING') {
     self.skipWaiting();

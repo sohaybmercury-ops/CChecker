@@ -8,10 +8,10 @@ import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { CalculatorHistory } from "@shared/schema";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
 export default function History() {
-  // استعلام للحصول على سجل الحاسبة
+  // Query to get calculator history
   const { data: history = [], isLoading, error } = useQuery({
     queryKey: ['/api/calculator/history'],
     queryFn: () => fetch('/api/calculator/history').then(res => res.json()) as Promise<CalculatorHistory[]>
@@ -19,7 +19,7 @@ export default function History() {
 
   const queryClient = useQueryClient();
 
-  // طفرة لمسح السجل
+  // Mutation to clear history
   const clearHistoryMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch('/api/calculator/history', { method: 'DELETE' });
@@ -34,7 +34,7 @@ export default function History() {
   });
 
   const handleClearHistory = () => {
-    if (window.confirm('هل أنت متأكد من حذف جميع السجلات؟')) {
+    if (window.confirm('Are you sure you want to delete all history?')) {
       clearHistoryMutation.mutate();
     }
   };
@@ -42,9 +42,9 @@ export default function History() {
   const formatDateTime = (timestamp: string | Date) => {
     try {
       const date = new Date(timestamp);
-      return format(date, 'PPP p', { locale: ar });
+      return format(date, 'PPP p', { locale: enUS });
     } catch {
-      return 'وقت غير معروف';
+      return 'Unknown time';
     }
   };
 
@@ -53,7 +53,7 @@ export default function History() {
       <div className="bg-background text-foreground min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">جاري تحميل السجل...</p>
+          <p className="mt-2 text-muted-foreground">Loading history...</p>
         </div>
       </div>
     );
@@ -63,7 +63,7 @@ export default function History() {
     return (
       <div className="bg-background text-foreground min-h-screen flex items-center justify-center p-4">
         <div className="text-center text-red-500">
-          <p>حدث خطأ في تحميل السجل</p>
+          <p>Error loading history</p>
         </div>
       </div>
     );
@@ -87,7 +87,7 @@ export default function History() {
           
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-primary" />
-            <h1 className="text-lg font-medium">سجل الحاسبة</h1>
+            <h1 className="text-lg font-medium">Calculator History</h1>
           </div>
           
           <Button
@@ -107,8 +107,8 @@ export default function History() {
           {history.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground">
               <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">لا توجد عمليات حسابية</p>
-              <p className="text-sm mt-2">ابدأ بإجراء بعض العمليات الحسابية</p>
+              <p className="text-lg">No calculations yet</p>
+              <p className="text-sm mt-2">Start performing some calculations</p>
             </div>
           ) : (
             <ScrollArea className="h-[500px]">
@@ -148,7 +148,7 @@ export default function History() {
               className="w-full"
               data-testid="button-return-calculator"
             >
-              العودة إلى الحاسبة
+              Return to Calculator
             </Button>
           </Link>
         </div>

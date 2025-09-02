@@ -29,7 +29,7 @@ export default function Calculator() {
   const viewport = useViewport();
   const { isOnline } = useOnlineStatus();
 
-  // حفظ العملية في السجل
+  // Save calculation to history
   const saveCalculationMutation = useMutation({
     mutationFn: async (data: InsertCalculatorHistory) => {
       const response = await fetch('/api/calculator/history', {
@@ -177,7 +177,7 @@ export default function Calculator() {
           const result = calculate(prev.lastResult, inputValue, prev.operator);
           const formattedResult = formatNumber(result);
           
-          // حفظ العملية في السجل
+          // Save calculation to history
           const expression = `${prev.lastResult} ${prev.operator} ${inputValue}`;
           saveCalculation(expression, formattedResult);
           
@@ -307,7 +307,7 @@ export default function Calculator() {
               data-testid="button-history"
             >
               <Clock className="h-4 w-4" />
-              السجل
+              History
             </Button>
           </Link>
         </div>

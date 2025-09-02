@@ -17,14 +17,14 @@ export class MobileUtils {
     if (!this.isNativePlatform()) return;
 
     try {
-      // تهيئة شريط الحالة
+      // Initialize status bar
       await StatusBar.setStyle({ style: Style.Light });
       await StatusBar.setBackgroundColor({ color: '#1a1a1a' });
 
-      // إخفاء شاشة البداية
+      // Hide splash screen
       await SplashScreen.hide();
 
-      // تكوين لوحة المفاتيح
+      // Configure keyboard
       Keyboard.addListener('keyboardWillShow', () => {
         document.body.classList.add('keyboard-open');
       });
@@ -74,7 +74,7 @@ export class MobileUtils {
   }
 }
 
-// خاصية للتحقق من وضع الشاشة
+// Utility for checking screen mode
 export const useViewport = () => {
   const getViewport = () => ({
     width: window.innerWidth,
@@ -87,7 +87,7 @@ export const useViewport = () => {
   return getViewport();
 };
 
-// وظائف للتعامل مع التخزين المحلي
+// Functions for handling local storage
 export class MobileStorage {
   static async set(key: string, value: string): Promise<void> {
     if (Capacitor.isNativePlatform()) {
