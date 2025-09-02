@@ -1,8 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { MobileUtils, useViewport } from "@/lib/mobile";
 import { ImpactStyle } from "@capacitor/haptics";
-import { OfflineStorage, useOnlineStatus } from "@/lib/offline";
+import { useOnlineStatus } from "@/lib/offline";
+import { useMutation } from "@tanstack/react-query";
+import { Clock } from "lucide-react";
+import { Link } from "wouter";
+import type { InsertCalculatorHistory } from "@shared/schema";
 
 interface CalculatorState {
   currentDisplay: string;
@@ -24,18 +29,29 @@ export default function Calculator() {
   const viewport = useViewport();
   const { isOnline } = useOnlineStatus();
 
-  // حفظ العملية الحسابية محلياً
-  const saveCalculation = useCallback(async (expression: string, result: string) => {
-    try {
-      await OfflineStorage.saveCalculation({
-        expression,
-        result,
-        timestamp: Date.now()
+  // حفظ العملية في السجل
+  const saveCalculationMutation = useMutation({
+    mutationFn: async (data: InsertCalculatorHistory) => {
+      const response = await fetch('/api/calculator/history', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
-    } catch (error) {
-      console.error('خطأ في حفظ العملية:', error);
-    }
-  }, []);
+      if (!response.ok) {
+        throw new Error('Failed to save calculation');
+      }
+      return response.json();
+    },
+  });
+
+  const saveCalculation = useCallback((expression: string, result: string) => {
+    saveCalculationMutation.mutate({
+      expression,
+      result,
+    });
+  }, [saveCalculationMutation]);
 
   const calculate = useCallback((firstOperand: number, secondOperand: number, operator: string): number => {
     switch (operator) {
@@ -161,6 +177,10 @@ export default function Calculator() {
           const result = calculate(prev.lastResult, inputValue, prev.operator);
           const formattedResult = formatNumber(result);
           
+          // حفظ العملية في السجل
+          const expression = `${prev.lastResult} ${prev.operator} ${inputValue}`;
+          saveCalculation(expression, formattedResult);
+          
           return {
             ...prev,
             currentDisplay: formattedResult,
@@ -277,6 +297,21 @@ export default function Calculator() {
   return (
     <div className="bg-background text-foreground min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm mx-auto">
+        {/* History Button */}
+        <div className="flex justify-end mb-4">
+          <Link href="/history">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex items-center gap-2 hover:bg-primary/10"
+              data-testid="button-history"
+            >
+              <Clock className="h-4 w-4" />
+              السجل
+            </Button>
+          </Link>
+        </div>
+        
         <Card className="bg-card rounded-2xl shadow-2xl overflow-hidden border border-border">
           {/* Calculator Display */}
           <div className="calc-display p-6 pb-4">
