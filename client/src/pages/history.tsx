@@ -14,7 +14,14 @@ export default function History() {
   // Query to get calculator history
   const { data: history = [], isLoading, error } = useQuery({
     queryKey: ['/api/calculator/history'],
-    queryFn: () => fetch('/api/calculator/history').then(res => res.json()) as Promise<CalculatorHistory[]>
+    queryFn: async () => {
+      const response = await fetch('/api/calculator/history');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data as CalculatorHistory[];
+    }
   });
 
   const queryClient = useQueryClient();
@@ -61,9 +68,57 @@ export default function History() {
 
   if (error) {
     return (
-      <div className="bg-background text-foreground min-h-screen flex items-center justify-center p-4">
-        <div className="text-center text-red-500">
-          <p>Error loading history</p>
+      <div className="bg-background text-foreground min-h-screen p-4">
+        <div className="w-full max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Link href="/">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-2 hover:bg-secondary"
+                data-testid="button-back-to-calculator"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <h1 className="text-lg font-medium">Calculator History</h1>
+            </div>
+            
+            <div className="w-10"></div>
+          </div>
+
+          <Card className="bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
+            <div className="p-8 text-center text-destructive">
+              <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-semibold mb-2">Error loading history</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                {error?.message || 'Unable to load calculator history'}
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+                className="mt-2"
+                data-testid="button-retry"
+              >
+                Try Again
+              </Button>
+            </div>
+          </Card>
+
+          <div className="text-center mt-6">
+            <Link href="/">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                data-testid="button-return-calculator"
+              >
+                Return to Calculator
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     );
