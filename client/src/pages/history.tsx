@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trash2, ArrowLeft, Clock } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
+import { MobileUtils } from "@/lib/mobile";
 import type { CalculatorHistory } from "@shared/schema";
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -15,7 +16,8 @@ export default function History() {
   const { data: history = [], isLoading, error } = useQuery({
     queryKey: ['/api/calculator/history'],
     queryFn: async () => {
-      const response = await fetch('/api/calculator/history');
+      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -29,7 +31,8 @@ export default function History() {
   // Mutation to clear history
   const clearHistoryMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/calculator/history', { method: 'DELETE' });
+      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
+      const response = await fetch(apiUrl, { method: 'DELETE' });
       if (!response.ok) {
         throw new Error('Failed to clear history');
       }

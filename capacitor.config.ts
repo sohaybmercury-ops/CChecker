@@ -7,8 +7,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     allowNavigation: [
-      'https://*'
-    ]
+      'https://*',
+      'http://localhost',
+      'http://127.0.0.1'
+    ],
+    cleartext: true
   },
   android: {
     allowMixedContent: true,

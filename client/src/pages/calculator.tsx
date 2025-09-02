@@ -32,7 +32,8 @@ export default function Calculator() {
   // Save calculation to history
   const saveCalculationMutation = useMutation({
     mutationFn: async (data: InsertCalculatorHistory) => {
-      const response = await fetch('/api/calculator/history', {
+      const apiUrl = MobileUtils.getApiUrl('/api/calculator/history');
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

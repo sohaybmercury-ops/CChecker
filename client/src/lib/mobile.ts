@@ -13,6 +13,22 @@ export class MobileUtils {
     return Capacitor.getPlatform();
   }
 
+  static getApiBaseUrl(): string {
+    // In development mode for Capacitor, use the Replit URL
+    if (this.isNativePlatform()) {
+      const replitHost = window.location.hostname;
+      return `https://${replitHost}`;
+    }
+    // For web, use relative URLs
+    return '';
+  }
+
+  static getApiUrl(endpoint: string): string {
+    const baseUrl = this.getApiBaseUrl();
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${baseUrl}${cleanEndpoint}`;
+  }
+
   static async initializeApp(): Promise<void> {
     if (!this.isNativePlatform()) return;
 
