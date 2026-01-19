@@ -20,15 +20,15 @@ android {
     signingConfigs {
         release {
             keyAlias 'my-key-alias'
-            keyPassword 'rOhg6wD9Z2Vv'
-            storeFile file('../signing.keystore')
-            storePassword 'rOhg6wD9Z2Vv'
+            keyPassword '310PpmiXUtmh'
+            storeFile file('signing.keystore')
+            storePassword '310PpmiXUtmh'
         }
         debug {
             keyAlias 'my-key-alias'
-            keyPassword 'rOhg6wD9Z2Vv'
-            storeFile file('../signing.keystore')
-            storePassword 'rOhg6wD9Z2Vv'
+            keyPassword '310PpmiXUtmh'
+            storeFile file('signing.keystore')
+            storePassword '310PpmiXUtmh'
         }
     }
 
