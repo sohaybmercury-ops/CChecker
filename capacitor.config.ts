@@ -6,11 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    allowNavigation: [
-      'https://*',
-      'http://localhost',
-      'http://127.0.0.1'
-    ],
+    allowNavigation: ['*'],
     cleartext: true
   },
   android: {
