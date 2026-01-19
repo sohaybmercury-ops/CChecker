@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.appsnour.calculator.app',
-  appName: 'Nour Calculator',
+  appId: 'com.probrqndify.calculator.app',
+  appName: 'Probrandify Calculator',
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
