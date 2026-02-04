@@ -1,4 +1,4 @@
-package com.probrqndify.calculator.app;
+package com.appstechnology.app;
 
 import com.getcapacitor.BridgeActivity;
 
